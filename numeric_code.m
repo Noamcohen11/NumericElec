@@ -6,11 +6,11 @@
 %%%%%%%% Contstants: %%%%%%%%
 
 E = 1;              %Electric field const.
-B = -1;             %Magnetic field const.
+B = 1;              %Magnetic field const.
 q = 1;              %particle charge const.
 m = 1;              %particle mass const.
-w = abs(q*B/m);     %Max sequence const.
-T = 2*pi/w;         %Max time const.
+w = q*B/m;          %Max sequence const.
+T = abs(2*pi/w);    %Max time const.
 
 QRun = [1 0 0 1];
 
@@ -158,7 +158,7 @@ if QRun(4)
 
         end
 
-        taylor_error(t) = sqrt(abs(final_y - t_y(t+1))^2 + abs(final_z - t_z(t+1))^2);
+        taylor_error(t) = sqrt((final_y - t_y(t+1))^2 + (final_z - t_z(t+1))^2);
         midpoint_error(t) = sqrt(abs(final_y - mp_y(t+1))^2 + abs(final_z - mp_z(t+1))^2);
         ronga_kota_error(t) = sqrt(abs(final_y - rk_y(t+1))^2 + abs(final_z - rk_z(t+1))^2);
 
