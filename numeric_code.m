@@ -12,7 +12,7 @@ m = 1;                  %particle mass const.
 w = q*B/m;              %Max sequence const.
 T = abs(2*pi/w);        %Max time const.
 
-QRun = [1 0 0 0 0 0 1];
+QRun = [1 0 0 1 0 0 0];
 
 %% Question 2:
 if QRun(2) 
@@ -71,8 +71,9 @@ if QRun(4)
     [~,final_y,final_z] = AnaliticalPos(E,B,w,T);
 
     %% For loops parameters
-    t = 100:10000;
-    delta_ts = T./t;
+
+    time_jumps_num = 1000:5000;
+    delta_ts = T./time_jumps_num;
 
     %Set values to zero
     taylor_error = zeros(length(delta_ts),1); 
@@ -88,22 +89,22 @@ if QRun(4)
     mp_k_z_speed = zeros(2,1);
 
     %% Repeat for different time jumps.
-    for t = 1:length(delta_ts)
+    for t = 1:length(time_jumps_num)
         
-        delta_t = delta_ts(t);
+        delta_t = T./time_jumps_num(t);
         %Set values to zero 
-        t_y = zeros(t,1);
-        t_z = zeros(t,1);
-        t_y_speed = zeros(t,1);
-        t_z_speed = zeros(t,1);
-        mp_y = zeros(t,1);
-        mp_z = zeros(t,1);
-        mp_y_speed = zeros(t,1);
-        mp_z_speed = zeros(t,1);
-        rk_y = zeros(t,1);
-        rk_z = zeros(t,1);
-        rk_y_speed = zeros(t,1);
-        rk_z_speed = zeros(t,1);
+        t_y = zeros(time_jumps_num(t),1);
+        t_z = zeros(time_jumps_num(t),1);
+        t_y_speed = zeros(time_jumps_num(t),1);
+        t_z_speed = zeros(time_jumps_num(t),1);
+        mp_y = zeros(time_jumps_num(t),1);
+        mp_z = zeros(time_jumps_num(t),1);
+        mp_y_speed = zeros(time_jumps_num(t),1);
+        mp_z_speed = zeros(time_jumps_num(t),1);
+        rk_y = zeros(time_jumps_num(t),1);
+        rk_z = zeros(time_jumps_num(t),1);
+        rk_y_speed = zeros(time_jumps_num(t),1);
+        rk_z_speed = zeros(time_jumps_num(t),1);
         
         % Get initial speed from analitical answer
         [~,t_y_speed(1),t_z_speed(1)] = AnaliticalSpeed(E,B,w,0);
@@ -111,7 +112,7 @@ if QRun(4)
         [~,rk_y_speed(1),rk_z_speed(1)] = AnaliticalSpeed(E,B,w,0);
 
         %Repeat the taylor sum for every time jump.
-        for i = 1:t
+        for i = 1:time_jumps_num(t)
 
             %%%%%%%% Taylor: %%%%%%%%%
             [pos,speed] = TaylorSum(E,B,m,q,delta_t,[0,t_y(i),t_z(i)],[0,t_y_speed(i),t_z_speed(i)]);
@@ -158,32 +159,31 @@ if QRun(4)
 
         end
 
-        taylor_error(t) = sqrt((final_y - t_y(t+1))^2 + (final_z - t_z(t+1))^2);
-        midpoint_error(t) = sqrt(abs(final_y - mp_y(t+1))^2 + abs(final_z - mp_z(t+1))^2);
-        ronga_kota_error(t) = sqrt(abs(final_y - rk_y(t+1))^2 + abs(final_z - rk_z(t+1))^2);
+        % taylor_error(t) = sqrt((final_y - t_y(t+1))^2 + (final_z - t_z(t+1))^2);
+        % midpoint_error(t) = sqrt((final_y - mp_y(t+1))^2 + (final_z - mp_z(t+1))^2);
+        % ronga_kota_error(t) = sqrt((final_y - rk_y(t+1))^2 + (final_z - rk_z(t+1))^2);
+        taylor_error(t) = sqrt((final_z - t_z(time_jumps_num(t)+1))^2);
+        midpoint_error(t) = sqrt((final_z - mp_z(time_jumps_num(t)+1))^2);
+        ronga_kota_error(t) = sqrt((final_z - rk_z(time_jumps_num(t)+1))^2);
 
     end
 
+    figure
+    hold on
+    box on
+    grid
     %Plot first order
-    PlotFunc(delta_ts,taylor_error);
-    xlabel('delta t');
-    ylabel('taylor error');
-    set(gca,'YScale','log');
-    set(gca,'XScale','log');
-
+    plot(delta_ts,taylor_error,'color','magenta')
     %Plot second order
-    PlotFunc(delta_ts,midpoint_error);
-    xlabel('delta t');
-    ylabel('midpoint error');
-    set(gca,'YScale','log');
-    set(gca,'XScale','log');
-
+    plot(delta_ts,midpoint_error,'color','blue')
     %Plot third order
-    PlotFunc(delta_ts,ronga_kota_error);
+    plot(delta_ts,ronga_kota_error,'color','red')
     xlabel('delta t');
-    ylabel('ronga kota error');
+    ylabel('error');
     set(gca,'YScale','log');
     set(gca,'XScale','log');
+    legend('taylor error', 'midpoint_error', 'ronga kota error')
+    hold off
 end
 
 %% Question 5,6:
