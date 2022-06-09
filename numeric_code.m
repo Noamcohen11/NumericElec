@@ -91,7 +91,7 @@ if QRun(4)
     %% Repeat for different time jumps.
     for t = 1:length(time_jumps_num)
         
-        delta_t = T./time_jumps_num(t);
+        delta_t = T/time_jumps_num(t);
         %Set values to zero 
         t_y = zeros(time_jumps_num(t),1);
         t_z = zeros(time_jumps_num(t),1);
@@ -130,8 +130,8 @@ if QRun(4)
                 mp_k_y_speed(j) = delta_t*y_acc;
                 mp_k_z_speed(j) = delta_t*z_acc;
 
-                [pos,speed] = TaylorSum(E,B,m,q,delta_t/2,[0,mp_k_y(j)/2 + mp_y(i),mp_k_z(j)/2 + mp_z(i)], ...
-                    [0,mp_k_y_speed(j)/2 + speed(2),mp_k_z_speed(j)/2 + speed(3)]);
+                [~,speed] = TaylorSum(E,B,m,q,delta_t/2,[0,mp_k_y(j)/2 + mp_y(i),mp_k_z(j)/2 + mp_z(i)], ...
+                    [0,mp_k_y_speed(j)/2 + mp_y_speed(i),mp_k_z_speed(j)/2 + mp_z_speed(i)]);
             end
             
             mp_y(i+1) = mp_y(i) + mp_k_y(2);
@@ -148,8 +148,8 @@ if QRun(4)
                 rk_k_y_speed(j) = delta_t*y_acc;
                 rk_k_z_speed(j) = delta_t*z_acc;
 
-                [pos,speed] = TaylorSum(E,B,m,q,delta_t/2,[0,rk_k_y(j)/2 + rk_y(i),rk_k_z(j)/2 + rk_z(i)], ...
-                    [0,rk_k_y_speed(j)/2 + speed(2),rk_k_z_speed(j)/2 + speed(3)]);
+                [~,speed] = TaylorSum(E,B,m,q,delta_t/2,[0,rk_k_y(j)/2 + rk_y(i),rk_k_z(j)/2 + rk_z(i)], ...
+                    [0,rk_k_y_speed(j)/2 + rk_y_speed(i),rk_k_z_speed(j)/2 + rk_z_speed(i)]);
             end
             
             rk_y(i+1) = rk_y(i) + (1/6)*(rk_k_y(1) + 2*rk_k_y(2) + 2*rk_k_y(3) + rk_k_y(4));
@@ -159,13 +159,9 @@ if QRun(4)
 
         end
 
-        % taylor_error(t) = sqrt((final_y - t_y(t+1))^2 + (final_z - t_z(t+1))^2);
-        % midpoint_error(t) = sqrt((final_y - mp_y(t+1))^2 + (final_z - mp_z(t+1))^2);
-        % ronga_kota_error(t) = sqrt((final_y - rk_y(t+1))^2 + (final_z - rk_z(t+1))^2);
-        taylor_error(t) = sqrt((final_z - t_z(time_jumps_num(t)+1))^2);
-        midpoint_error(t) = sqrt((final_z - mp_z(time_jumps_num(t)+1))^2);
-        ronga_kota_error(t) = sqrt((final_z - rk_z(time_jumps_num(t)+1))^2);
-
+        taylor_error(t) = sqrt((final_y - t_y(time_jumps_num(t)+1))^2 + (final_z - t_z(time_jumps_num(t)+1))^2);
+        midpoint_error(t) = sqrt((final_y - mp_y(time_jumps_num(t)+1))^2 + (final_z - mp_z(time_jumps_num(t)+1))^2);
+        ronga_kota_error(t) = sqrt((final_y - rk_y(time_jumps_num(t)+1))^2 + (final_z - rk_z(time_jumps_num(t)+1))^2);
     end
 
     figure
