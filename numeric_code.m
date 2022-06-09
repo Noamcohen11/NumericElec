@@ -5,14 +5,14 @@
 
 %%%%%%%% Contstants: %%%%%%%%
 
-E = 1;              %Electric field const.
-B = 1;              %Magnetic field const.
-q = 1;              %particle charge const.
-m = 1;              %particle mass const.
-w = q*B/m;          %Max sequence const.
-T = abs(2*pi/w);    %Max time const.
+E = 1;                  %Electric field const.
+B = 1;                  %Magnetic field const.
+q = 1;                  %particle charge const.
+m = 1;                  %particle mass const.
+w = q*B/m;              %Max sequence const.
+T = abs(2*pi/w);        %Max time const.
 
-QRun = [1 0 0 1];
+QRun = [1 0 0 0 0 0 1];
 
 %% Question 2:
 if QRun(2) 
@@ -184,6 +184,112 @@ if QRun(4)
     ylabel('ronga kota error');
     set(gca,'YScale','log');
     set(gca,'XScale','log');
+end
+
+%% Question 5,6:
+
+%%%%%%%% Contstants: %%%%%%%%
+
+R = 0.003;                              %Radius in m.
+L = 1;                                  %Length in m.
+C = 299792458;                          %Speed of light.
+m = 1.672621898*(10^(-27));             %Proton mass in MeV.
+B = 0.5;                                %Magnetic field.
+q = 1.602*(10^(-19));                   %Proton electric change.
+w = q*B/m;                              %Max sequence const.
+T = abs(2*pi/w);                        %Max time const.
+AvgEng = 5;                             %Energy in MeV.
+EngDelta = 0.25;                        %Energy delta in MeV.
+ProtonMassMeV = 938.272;                %Proton mass in MeV.
+E = B*sqrt(2*AvgEng/ProtonMassMeV)*C;   %Electric field according to Q5.
+
+%Acroding to question 5 (in the doc) the fields should be:
+if QRun(6)
+
+    PassingEng = AvgEng + 0.1;
+    MaxEng = AvgEng + EngDelta;
+
+    %First we need to calculate the speed of 2 energies:
+    max_proton_speed = sqrt(2*MaxEng/ProtonMassMeV)*C;
+    passing_proton_speed = sqrt(2*PassingEng/ProtonMassMeV)*C;
+
+    delta_t = 0.0000000000001;
+
+    %Set values to zero 
+    y = zeros(10000,1);
+    z = zeros(10000,1);
+    y_speed = zeros(10000,1);
+    z_speed = zeros(10000,1);
+
+    % Get initial speed from analitical answer
+    y_speed(1) = 0;
+    z_speed(1) = max_proton_speed;
+
+    %Repeat the taylor sum for every time jump.
+    i = 1;
+    while (z(i) < L) && (abs(y(i)) < R) 
+        [pos,speed] = TaylorSum(E,B,m,q,delta_t,[0,y(i),z(i)],[0,y_speed(i),z_speed(i)]);
+        y(i+1) = pos(2);
+        z(i+1) = pos(3);
+        y_speed(i+1) = speed(2);
+        z_speed(i+1) = speed(3);
+        i = i+1;
+    end
+
+    %Plot first_order r
+    PlotFunc(y,z);
+    xlabel('Y');
+    ylabel('Z');
+end
+
+%% Question 7:
+if QRun(7)
+    
+    MaxEng = AvgEng + EngDelta;
+    MinEng = AvgEng - EngDelta;
+    avg_speed = sqrt(2*AvgEng/ProtonMassMeV)*C;
+    max_speed = sqrt(2*MaxEng/ProtonMassMeV)*C;
+    min_speed = sqrt(2*MinEng/ProtonMassMeV)*C;
+
+    passing_dv = [];
+    passing_y  = [];
+
+    RepeatNum = 50;
+    
+    for y0 = -R:(2*R/RepeatNum):R
+        for v = min_speed:(max_speed - min_speed)/RepeatNum:max_speed
+            
+            delta_t = 0.0000000000001;
+
+            %Set values to zero 
+            y = zeros(10000,1);
+            z = zeros(10000,1);
+            y_speed = zeros(10000,1);
+            z_speed = zeros(10000,1);
+
+            % Get initial speed from analitical answer
+            y(1) = y0;
+            z_speed(1) = v;
+
+            i = 1;
+            while (z(i) < L) && (abs(y(i)) < R) 
+                [pos,speed] = TaylorSum(E,B,m,q,delta_t,[0,y(i),z(i)],[0,y_speed(i),z_speed(i)]);
+                y(i+1) = pos(2);
+                z(i+1) = pos(3);
+                y_speed(i+1) = speed(2);
+                z_speed(i+1) = speed(3);
+                i = i+1;
+            end
+            if(z(i) > L || z(i) == L)
+                passing_dv = [passing_dv (avg_speed - v)/avg_speed]; 
+                passing_y  = [passing_y y0/R];
+            end
+        end
+    end
+    %Plot first_order r
+    PlotFunc(passing_y,passing_dv);
+    xlabel('Y0/R');
+    ylabel('deltaV/V0');
 end
 
 %% Question 1:
