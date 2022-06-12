@@ -12,7 +12,7 @@ m = 1;                  %particle mass const.
 w = q*B/m;              %Max sequence const.
 T = abs(2*pi/w);        %Max time const.
 
-QRun = [1 0 0 1 0 0 0];
+QRun = [1 0 0 0 0 0 1];
 
 %% Question 2:
 if QRun(2) 
@@ -156,7 +156,6 @@ if QRun(4)
             rk_z(i+1) = rk_z(i) + (1/6)*(rk_k_z(1) + 2*rk_k_z(2) + 2*rk_k_z(3) + rk_k_z(4));
             rk_y_speed(i+1) = rk_y_speed(i) + (1/6)*(rk_k_y_speed(1) + 2*rk_k_y_speed(2) + 2*rk_k_y_speed(3) + rk_k_y_speed(4));
             rk_z_speed(i+1) = rk_z_speed(i) + (1/6)*(rk_k_z_speed(1) + 2*rk_k_z_speed(2) + 2*rk_k_z_speed(3) + rk_k_z_speed(4));
-
         end
 
         taylor_error(t) = sqrt((final_y - t_y(time_jumps_num(t)+1))^2 + (final_z - t_z(time_jumps_num(t)+1))^2);
@@ -247,45 +246,59 @@ if QRun(7)
     max_speed = sqrt(2*MaxEng/ProtonMassMeV)*C;
     min_speed = sqrt(2*MinEng/ProtonMassMeV)*C;
 
-    passing_dv = [];
-    passing_y  = [];
-
-    RepeatNum = 50;
+    passing_normal_v = [];
+    passing_normal_y = [];
+    passing_vy = [];
+    passing_vz = [];
     
-    for y0 = -R:(2*R/RepeatNum):R
-        for v = min_speed:(max_speed - min_speed)/RepeatNum:max_speed
-            
-            delta_t = 0.0000000000001;
+    rand1 = rand(1,10^5);
+    rand2 = rand(1,10^5);
+    for j = 1:10^5
+        y0 = -R + 2*R*rand1(j);
+        v = min_speed + (max_speed - min_speed)*rand2(j);
+    
+        delta_t = 0.000000000001;
 
-            %Set values to zero 
-            y = zeros(10000,1);
-            z = zeros(10000,1);
-            y_speed = zeros(10000,1);
-            z_speed = zeros(10000,1);
+        %Set values to zero 
+        y = zeros(10000,1);
+        z = zeros(10000,1);
+        y_speed = zeros(10000,1);
+        z_speed = zeros(10000,1);
 
-            % Get initial speed from analitical answer
-            y(1) = y0;
-            z_speed(1) = v;
+        % Get initial speed from analitical answer
+        y(1) = y0;
+        z_speed(1) = v;
 
-            i = 1;
-            while (z(i) < L) && (abs(y(i)) < R) 
-                [pos,speed] = TaylorSum(E,B,m,q,delta_t,[0,y(i),z(i)],[0,y_speed(i),z_speed(i)]);
-                y(i+1) = pos(2);
-                z(i+1) = pos(3);
-                y_speed(i+1) = speed(2);
-                z_speed(i+1) = speed(3);
-                i = i+1;
-            end
-            if(z(i) > L || z(i) == L)
-                passing_dv = [passing_dv (avg_speed - v)/avg_speed]; 
-                passing_y  = [passing_y y0/R];
-            end
+        i = 1;
+        while (z(i) < L) && (abs(y(i)) < R) 
+            [pos,speed] = TaylorSum(E,B,m,q,delta_t,[0,y(i),z(i)],[0,y_speed(i),z_speed(i)]);
+            y(i+1) = pos(2);
+            z(i+1) = pos(3);
+            y_speed(i+1) = speed(2);
+            z_speed(i+1) = speed(3);
+            i = i+1;
+        end
+        if(z(i) > L || z(i) == L)
+            passing_normal_v = [passing_normal_v (avg_speed - v)/avg_speed]; 
+            passing_normal_y = [passing_normal_y y0/R];
+            passing_vy = [passing_vy y_speed(i)];
+            passing_vz = [passing_vz z_speed(i)];
         end
     end
-    %Plot first_order r
-    PlotFunc(passing_y,passing_dv);
+    
+    %Plot r
+    figure
+    hold on
+    box on
+    grid
+    plot(passing_y,passing_dv, '.')
+    hold off
     xlabel('Y0/R');
     ylabel('deltaV/V0');
+    figure 
+    histogram(passing_vy);
+    figure
+    histogram(passing_vz);
 end
 
 %% Question 1:
